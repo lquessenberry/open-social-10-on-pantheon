@@ -70,6 +70,8 @@
     Object.keys(this.dependees || {}).forEach(function (selector) {
       _this.initializeDependee(selector, _this.dependees[selector]);
     });
+
+    this.reevaluate();
   };
 
   states.Dependent.comparisons = {
@@ -101,11 +103,16 @@
 
         _this2.values[selector][state.name] = null;
 
-        $(selector).on('state:' + state, { selector: selector, state: state }, function (e) {
+        var $dependee = $(selector);
+        $dependee.on('state:' + state, { selector: selector, state: state }, function (e) {
           _this2.update(e.data.selector, e.data.state, e.value);
         });
 
         new states.Trigger({ selector: selector, state: state });
+
+        if ($dependee.data('trigger:' + state.name) !== undefined) {
+          _this2.values[selector][state.name] = $dependee.data('trigger:' + state.name);
+        }
       });
     },
     compare: function compare(reference, selector, state) {
@@ -202,7 +209,7 @@
     if (this.state in states.Trigger.states) {
       this.element = $(this.selector);
 
-      if (!this.element.data('trigger:' + this.state)) {
+      if (this.element.data('trigger:' + this.state) === undefined) {
         this.initialize();
       }
     }
@@ -215,17 +222,19 @@
       var trigger = states.Trigger.states[this.state];
 
       if (typeof trigger === 'function') {
+        this.element.data('trigger:' + this.state, null);
+
         trigger.call(window, this.element);
       } else {
         Object.keys(trigger || {}).forEach(function (event) {
           _this3.defaultTrigger(event, trigger[event]);
         });
       }
-
-      this.element.data('trigger:' + this.state, true);
     },
     defaultTrigger: function defaultTrigger(event, valueFn) {
       var oldValue = valueFn.call(this.element);
+
+      this.element.data('trigger:' + this.state, oldValue);
 
       this.element.on(event, $.proxy(function (e) {
         var value = valueFn.call(this.element, e);
@@ -237,15 +246,9 @@
             oldValue: oldValue
           });
           oldValue = value;
-        }
-      }, this));
 
-      states.postponed.push($.proxy(function () {
-        this.element.trigger({
-          type: 'state:' + this.state,
-          value: oldValue,
-          oldValue: null
-        });
+          this.element.data('trigger:' + this.state, value);
+        }
       }, this));
     }
   };
@@ -344,7 +347,7 @@
   var $document = $(document);
   $document.on('state:disabled', function (e) {
     if (e.trigger) {
-      $(e.target).prop('disabled', e.value).closest('.js-form-item, .js-form-submit, .js-form-wrapper').toggleClass('form-disabled', e.value).find('select, input, textarea').prop('disabled', e.value);
+      $(e.target).closest('.js-form-item, .js-form-submit, .js-form-wrapper').toggleClass('form-disabled', e.value).find('select, input, textarea').prop('disabled', e.value);
     }
   });
 
@@ -371,7 +374,7 @@
 
   $document.on('state:checked', function (e) {
     if (e.trigger) {
-      $(e.target).prop('checked', e.value);
+      $(e.target).closest('.js-form-item, .js-form-wrapper').find('input').prop('checked', e.value);
     }
   });
 

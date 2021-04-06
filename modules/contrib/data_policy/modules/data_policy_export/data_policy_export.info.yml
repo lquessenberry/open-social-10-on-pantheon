@@ -1,0 +1,13 @@
+name: Data Policy Export
+description: Creates the possibility to export data policies to CSV as a bulk action.
+core: 8.x
+dependencies:
+  - views_bulk_operations
+  - csv_serialization:csv_serialization
+  - data_policy
+type: module
+
+# Information added by Drupal.org packaging script on 2021-02-25
+version: '8.x-1.0-beta7'
+project: 'data_policy'
+datestamp: 1614257882

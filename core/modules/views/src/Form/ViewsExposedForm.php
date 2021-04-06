@@ -85,6 +85,11 @@ class ViewsExposedForm extends FormBase {
     /** @var \Drupal\views\ViewExecutable $view */
     $view = $form_state->get('view');
     $display = &$form_state->get('display');
+    // Existing arguments need to be passed as this exposed form might
+    // be used in a block. Without this contextual views arguments
+    // will be lost.
+    $args = $this->buildArgs();
+    $view->setArguments($args);
 
     $form_state->setUserInput($view->getExposedInput());
 
@@ -158,6 +163,45 @@ class ViewsExposedForm extends FormBase {
     $this->exposedFormCache->setForm($view->storage->id(), $view->current_display, $form);
 
     return $form;
+  }
+
+  /**
+   * @return array
+   *
+   * This code copied from \Drupal\views\Routing\ViewPageController::handle
+   *
+   * TODO: Don't repeat it.
+   *
+   * @see \Drupal\views\Routing\ViewPageController::handle
+   * @see https://www.drupal.org/project/drupal/issues/2821962
+   */
+  protected function buildArgs() {
+    /** @var \Drupal\Core\Routing\CurrentRouteMatch $route_match */
+    $route_match = \Drupal::service('current_route_match');
+    $args = [];
+    $route = $route_match->getRouteObject();
+    $map = $route->hasOption('_view_argument_map') ? $route->getOption('_view_argument_map') : [];
+
+    foreach ($map as $attribute => $parameter_name) {
+      // Allow parameters be pulled from the request.
+      // The map stores the actual name of the parameter in the request. Views
+      // which override existing controller, use for example 'node' instead of
+      // arg_nid as name.
+      if (isset($map[$attribute])) {
+        $attribute = $map[$attribute];
+      }
+      if ($arg = $route_match->getRawParameter($attribute)) {
+      }
+      else {
+        $arg = $route_match->getParameter($attribute);
+      }
+
+      if (isset($arg)) {
+        $args[] = $arg;
+      }
+    }
+
+    return $args;
   }
 
   /**

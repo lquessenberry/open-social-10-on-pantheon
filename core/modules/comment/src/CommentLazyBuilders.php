@@ -172,7 +172,7 @@ class CommentLazyBuilders implements TrustedCallbackInterface {
    */
   protected function buildLinks(CommentInterface $entity, EntityInterface $commented_entity) {
     $links = [];
-    $status = $commented_entity->get($entity->getFieldName())->status;
+    $status = $commented_entity->getFieldValue($entity->getFieldName(), 'status');
 
     if ($status == CommentItemInterface::OPEN) {
       if ($entity->access('delete')) {

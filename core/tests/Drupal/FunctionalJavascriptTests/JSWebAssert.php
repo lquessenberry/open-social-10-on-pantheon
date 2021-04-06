@@ -2,6 +2,8 @@
 
 namespace Drupal\FunctionalJavascriptTests;
 
+use Behat\Mink\Element\Element;
+use Behat\Mink\Element\ElementInterface;
 use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Exception\ElementHtmlException;
 use Behat\Mink\Exception\ElementNotFoundException;
@@ -43,6 +45,157 @@ JS;
     if (!$result) {
       throw new \RuntimeException($message);
     }
+  }
+
+  /**
+   * Asserts that the specific element is visible on the current page.
+   *
+   * @param string $selector_type
+   *   The element selector type (css, xpath).
+   * @param string|array $selector
+   *   The element selector.
+   * @param \Behat\Mink\Element\ElementInterface $container
+   *   The document to check against.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   *   When the element doesn't exist.
+   */
+  public function assertElementVisible($selector_type, $selector, ElementInterface $container = NULL) {
+    $node = $this->findNode($selector_type, $selector, $container);
+
+    $message = sprintf(
+      'Element "%s" is not visible.',
+      $this->getMatchingElementRepresentation($selector_type, $selector)
+    );
+    $this->assertElement($node->isVisible(), $message, $node);
+  }
+
+  /**
+   * Asserts that the specific element is not visible on the current page.
+   *
+   * @param string $selector_type
+   *   The element selector type (css, xpath).
+   * @param string|array $selector
+   *   The element selector.
+   * @param \Behat\Mink\Element\ElementInterface $container
+   *   The document to check against.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   *   When the element doesn't exist.
+   */
+  public function assertElementNotVisible($selector_type, $selector, ElementInterface $container = NULL) {
+    $node = $this->findNode($selector_type, $selector, $container);
+
+    $message = sprintf(
+      'Element "%s" is not visible.',
+      $this->getMatchingElementRepresentation($selector_type, $selector)
+    );
+    $this->assertElement(!$node->isVisible(), $message, $node);
+  }
+
+  /**
+   * Asserts that the specific element is not required on the current page.
+   *
+   * @param string $selector_type
+   *   The element selector type (css, xpath).
+   * @param string|array $selector
+   *   The element selector.
+   * @param \Behat\Mink\Element\ElementInterface $container
+   *   The document to check against.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   *   When the element doesn't exist.
+   */
+  public function assertElementRequired($selector_type, $selector, ElementInterface $container = NULL) {
+    $node = $this->findNode($selector_type, $selector, $container);
+
+    $message = sprintf(
+      'Element "%s" is required.',
+      $this->getMatchingElementRepresentation($selector_type, $selector)
+    );
+    $this->assertElement($node->getAttribute('required') == 'required', $message, $node);
+  }
+
+  /**
+   * Asserts that the specific element is not required on the current page.
+   *
+   * @param string $selector_type
+   *   The element selector type (css, xpath).
+   * @param string|array $selector
+   *   The element selector.
+   * @param \Behat\Mink\Element\ElementInterface $container
+   *   The document to check against.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   *   When the element doesn't exist.
+   */
+  public function assertElementOptional($selector_type, $selector, ElementInterface $container = NULL) {
+    $node = $this->findNode($selector_type, $selector, $container);
+
+    $message = sprintf(
+      'Element "%s" is optional.',
+      $this->getMatchingElementRepresentation($selector_type, $selector)
+    );
+    $this->assertElement(!$node->hasAttribute('required'), $message, $node);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function assertElement($condition, $message, Element $element) {
+    if ($condition) {
+      return;
+    }
+
+    throw new ElementHtmlException($message, $this->session->getDriver(), $element);
+  }
+
+  /**
+   * Find a node in the container specified usually the current page.
+   *
+   * @param string $selector_type
+   *   The element selector type (CSS, XPath).
+   * @param string $selector
+   *   The selector engine name. See ElementInterface::findAll() for the
+   *   supported selectors.
+   * @param \Behat\Mink\Element\ElementInterface $container
+   *   The document to check against.
+   *
+   * @return \Behat\Mink\Element\NodeElement
+   *   The node element if exists in the current container.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   *   When the element doesn't exist.
+   */
+  protected function findNode($selector_type, $selector, ElementInterface $container = NULL) {
+    $container = $container ?: $this->session->getPage();
+    $node = $container->find($selector_type, $selector);
+    if ($node === NULL) {
+      if (is_array($selector)) {
+        $selector = implode(' ', $selector);
+      }
+      throw new ElementNotFoundException($this->session->getDriver(), 'element', $selector_type, $selector);
+    }
+    return $node;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getMatchingElementRepresentation($selector_type, $selector, $plural = FALSE) {
+    $pluralization = $plural ? 's' : '';
+
+    if (in_array($selector_type, ['named', 'named_exact', 'named_partial'])
+      && is_array($selector) && 2 === count($selector)
+    ) {
+      return sprintf('%s%s matching locator "%s"', $selector[0], $pluralization, $selector[1]);
+    }
+
+    if (is_array($selector)) {
+      $selector = implode(' ', $selector);
+    }
+
+    return sprintf('element%s matching %s "%s"', $pluralization, $selector_type, $selector);
   }
 
   /**

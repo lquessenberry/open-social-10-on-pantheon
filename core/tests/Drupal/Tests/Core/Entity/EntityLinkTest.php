@@ -53,7 +53,7 @@ class EntityLinkTest extends UnitTestCase {
   }
 
   /**
-   * Tests for the Entity::link() method
+   * Tests for the Entity::link() method.
    *
    * @covers ::link
    *

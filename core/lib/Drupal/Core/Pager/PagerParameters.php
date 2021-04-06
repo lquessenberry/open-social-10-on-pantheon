@@ -47,6 +47,10 @@ class PagerParameters implements PagerParametersInterface {
    */
   public function findPage($pager_id = 0) {
     $pages = $this->getPagerQuery();
+
+    if (count($pages) === 1) {
+      return (int) reset($pages);
+    }
     return (int) ($pages[$pager_id] ?? 0);
   }
 

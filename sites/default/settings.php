@@ -23,3 +23,14 @@ $local_settings = __DIR__ . "/settings.local.php";
 if (file_exists($local_settings)) {
   include $local_settings;
 }
+$databases['default']['default'] = array (
+  'database' => 'drupal9',
+  'username' => 'drupal9',
+  'password' => 'drupal9',
+  'prefix' => '',
+  'host' => 'database',
+  'port' => '3306',
+  'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
+  'driver' => 'mysql',
+);
+$settings['hash_salt'] = 'GpOzR1yWEppG7j5kqLtHEdS3E863Cf3hGBPtjj0a-wvFvQsxd0w763y9hZMLaE9DdvLtFyizgw';

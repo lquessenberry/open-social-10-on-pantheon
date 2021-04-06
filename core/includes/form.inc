@@ -278,13 +278,14 @@ function template_preprocess_details(&$variables) {
  */
 function template_preprocess_radios(&$variables) {
   $element = $variables['element'];
-  $variables['attributes'] = [];
   if (isset($element['#id'])) {
     $variables['attributes']['id'] = $element['#id'];
   }
   if (isset($element['#attributes']['title'])) {
     $variables['attributes']['title'] = $element['#attributes']['title'];
   }
+  // Disabled property should only be applied to input element children.
+  unset($variables['attributes']['disabled']);
   $variables['children'] = $element['#children'];
 }
 
@@ -300,13 +301,14 @@ function template_preprocess_radios(&$variables) {
  */
 function template_preprocess_checkboxes(&$variables) {
   $element = $variables['element'];
-  $variables['attributes'] = [];
   if (isset($element['#id'])) {
     $variables['attributes']['id'] = $element['#id'];
   }
   if (isset($element['#attributes']['title'])) {
     $variables['attributes']['title'] = $element['#attributes']['title'];
   }
+  // Disabled property should only be applied to input element children.
+  unset($variables['attributes']['disabled']);
   $variables['children'] = $element['#children'];
 }
 

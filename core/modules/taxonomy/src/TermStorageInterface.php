@@ -85,11 +85,13 @@ interface TermStorageInterface extends ContentEntityStorageInterface {
    *   they are partial objects queried directly from the {taxonomy_term_data}
    *   table to save execution time and memory consumption when listing large
    *   numbers of terms. Defaults to FALSE.
+   * @param string $langcode
+   *   The language in which term should be loaded if translation is available.
    *
    * @return object[]|\Drupal\taxonomy\TermInterface[]
    *   An array of term objects that are the children of the vocabulary $vid.
    */
-  public function loadTree($vid, $parent = 0, $max_depth = NULL, $load_entities = FALSE);
+  public function loadTree($vid, $parent = 0, $max_depth = NULL, $load_entities = FALSE, $langcode = NULL);
 
   /**
    * Count the number of nodes in a given vocabulary ID.

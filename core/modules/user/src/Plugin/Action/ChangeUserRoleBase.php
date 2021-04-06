@@ -50,7 +50,7 @@ abstract class ChangeUserRoleBase extends ConfigurableActionBase implements Cont
    */
   public function defaultConfiguration() {
     return [
-      'rid' => '',
+      'rid' => NULL,
     ];
   }
 

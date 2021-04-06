@@ -461,7 +461,7 @@ abstract class QueryBase implements QueryInterface {
    *   The alias for the field.
    */
   protected function getAggregationAlias($field, $function) {
-    return strtolower($field . '_' . $function);
+    return strtolower(str_replace([':', '.'], '__', $field) . '_' . $function);
   }
 
   /**
